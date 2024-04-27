@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+static const int INVALID_INPUT_LIMIT = 10;
+
 void printBoard(char state[]) {
 	for (int i = 0; i < 6; i++) {
 		printf("- ");
@@ -56,20 +58,54 @@ bool gameEnd(char state[], char mark) {
 	return false;
 }
 
+void printControls() {
+	printf("\nCONTROLS:\n");
+	printf("TO PLACE A PIECE, TYPE ONE OF THE FOLLOWING NAMES: \n\n");
+	printf("top-left, top-middle, top-right\n");
+	printf("center-left, center, center-right\n");
+	printf("bottom-left, bottom, bottom-right\n");
+	printf("\nPRESS q AT ANY TIME TO QUIT\n\n");
+}
+
 int main(int argc, char *argv[]) {
 	char state[9] = {' '};
 	char player1Mark = 'q';
 	char player2Mark = 'q';
 
 	printWelcome();
-	char gamemode;
-	scanf("%c", &gamemode);
+ 
+	int invalidInputLimit = INVALID_INPUT_LIMIT;
+	char gamemode = '0';
 
-	printf("Player 1: Choose X or O\n");
+	while (invalidInputLimit > 0) {
+		char input;
+		scanf("%c", &input);
+		if (input  == 'q') exit(0);
+		if (input  == 'c') printControls();
 
-	int wrongInputLimit = 10;
+		if (input == '1' || input == '2') {
+			gamemode = input;
+			break;
+		}
+		if (invalidInputLimit <= 0) {
+			printf("Too many bad inputs! Bye!\n");
+			exit(0);
+		}
+		invalidInputLimit--;
+		printf("Choose a gamemode!\n");
+	}
+
+	if (gamemode == '1') {
+		printf("Choose X or O\n");
+	}
 	
-	while (wrongInputLimit) {
+	if (gamemode == '2') {
+		printf("Player 1: Choose X or O\n");
+	}
+
+	invalidInputLimit = INVALID_INPUT_LIMIT;
+	
+	while (invalidInputLimit > 0) {
 		scanf("%c", &player1Mark);
 		if (player1Mark == 'q' || player1Mark == 'Q') exit(0);
 		if (player1Mark == 'x' || player1Mark == 'X') {
@@ -82,9 +118,9 @@ int main(int argc, char *argv[]) {
 			player2Mark = 'X';
 			break;
 		}
-		wrongInputLimit--;
+		invalidInputLimit--;
 	}
-	if (wrongInputLimit <= 0) {
+	if (invalidInputLimit <= 0) {
 		printf("Too many bad inputs! Bye!\n");
 	}
 
@@ -92,7 +128,7 @@ int main(int argc, char *argv[]) {
 
 	// true for player1's turn, false for player2 or AI
 	bool playerTurn = true;
-	int turnLimit = 10;
+	int turnLimit = 20;
 	
 	// game loop 
 	while (!gameEnd(state, player1Mark) || !gameEnd(state, player2Mark)) {
