@@ -58,6 +58,13 @@ bool gameEnd(char state[], char mark) {
 	return false;
 }
 
+bool isDraw(char state[]) {
+	for (int i = 0; i < 9; ++i) {
+		if (state[i] == ' ') return false;
+	}
+	return true;
+}
+
 void printControls() {
 	printf("\nCONTROLS:\n");
 	printf("TO PLACE A PIECE, TYPE ONE OF THE FOLLOWING NAMES: \n\n");
@@ -68,7 +75,7 @@ void printControls() {
 }
 
 int main(int argc, char *argv[]) {
-	char state[9] = {' '};
+	char state[9] = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
 	char player1Mark = 'q';
 	char player2Mark = 'q';
 
@@ -128,10 +135,12 @@ int main(int argc, char *argv[]) {
 
 	// true for player1's turn, false for player2 or AI
 	bool playerTurn = true;
-	int turnLimit = 20;
+	int numTurns = 0;
 	
 	// game loop 
-	while (!gameEnd(state, player1Mark) || !gameEnd(state, player2Mark)) {
+	while (!gameEnd(state, player1Mark) || !gameEnd(state, player2Mark) ||  numTurns < 20) {
+		numTurns++;
+
 		if (playerTurn) printf("Player 1: \n");
 		else printf("Player 2: \n");
 
@@ -142,16 +151,29 @@ int main(int argc, char *argv[]) {
 		if (move[0] == 'q') break;
 
 		position = convertInputToPosition(move);
-
-		state[position] = playerTurn ? player1Mark : player2Mark;
+		bool validMove = (position >= 0 && state[position] == ' ');
+		
+		if (validMove) {
+			state[position] = playerTurn ? player1Mark : player2Mark;
+		}
 
 		printBoard(state);
-		if (gameEnd(state, player1Mark) || gameEnd(state, player2Mark)) {
-			printf("GAME END\n");
+
+		if (gameEnd(state, player1Mark)) {
+			printf("PLAYER 1 WINS!\n");
 			break;
 		}
+
+		if (gameEnd(state, player2Mark)) {
+			printf("PLAYER 2 WINS\n");
+			break;
+		}
+		if (numTurns >= 9 && isDraw(state)) {
+			printf("DRAW\n");
+			break;
+		}
+
 		playerTurn = !playerTurn;
-		turnLimit++;
 	}
 
 	return 0;
