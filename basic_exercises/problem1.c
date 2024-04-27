@@ -2,9 +2,9 @@
 
 int main(){
 
-    printf("Name    : Kevin Williams\n");
-    printf("DOB    : July 23, 2004\n");
-    printf("Mobile : 832-846-0655\n");
+    printf("Name    : KingArthur\n");
+    printf("DOB    : December 3, 455\n");
+    printf("Address : Tintagel Castle \n");
 
     return 0;
 }
