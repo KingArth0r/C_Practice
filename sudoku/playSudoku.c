@@ -121,6 +121,7 @@ int** initBoard(int boardNum, bool isSolution) {
 			}
 			free(state);
 			free(line);
+			fclose(fp);
 			//free(filename);
 
 			exit(1);
@@ -135,9 +136,56 @@ int** initBoard(int boardNum, bool isSolution) {
 
 	free(line);
 	line = NULL;
+	fclose(fp);
 	// free(filename);
 	// filename = NULL;
 	return state;	
+}
+
+bool isValid(int **state) {
+	bool seen[SIZE];
+	for (int i = 0; i < SIZE; i++) {
+		seen[i] = false;
+	}
+
+	// check rows
+	for (int i = 0; i < SIZE; i++) {
+		for (int j = 0; j < SIZE; j++) {
+			if (state[i][j] > 0) {
+				if (seen[state[i][j] - 1]) return false;
+				else seen[state[i][j] - 1] = true;
+			}
+		
+		}
+		memset(seen, 0, sizeof(seen));
+	}
+
+	// check colmns
+	for (int i = 0; i < SIZE; i++) {
+		for (int j = 0; j < SIZE; j++) {
+			if (state[i][j] > 0) {
+				if (seen[state[i][j] - 1]) return false;
+				else seen[state[i][j] - 1] = true;
+			}
+		}
+		memset(seen, 0, sizeof(seen));
+	}
+
+	// check sub-boxes
+	for (int n = 0; n < SIZE; n += 3) {
+		for (int m = 0; m < SIZE; m += 3) {
+			for (int i = 0; i < 3; i++) {
+				for (int j = 0; j < 3; j++) {
+					if (state[i][j] > 0) {
+						if (seen[state[i][j] - 1]) return false;
+						else seen[state[i][j] - 1] = true;
+					}
+				}
+			}
+			memset(seen, 0, sizeof(seen));
+		}
+	}
+	return true;
 }	
 
 int main() {
@@ -150,7 +198,6 @@ int main() {
 		}
 	}
 	
-
 	for (int i = 0; i < SIZE; i++) {
 		for (int j = 0; j < SIZE; j++) {
 			board[MULTIPLIER * i + CENTER][MULTIPLIER * j + CENTER] = state[i][j];
@@ -162,5 +209,7 @@ int main() {
 	for (int i = 0; i < SIZE; i++) {
 		free(state[i]);
 	}
+	free(state);
+
 	return 0;
 }
