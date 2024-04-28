@@ -25,6 +25,7 @@ static const char *DELIM = ",";
 // input is the 27 x 27 board of numbers and its subnumbers
 void printBoard(int board[TOTAL_BOARD_SIZE][TOTAL_BOARD_SIZE]) {
 	// print top boarder, the + 9 is to account for the | between squares
+	printf("\n\n");
 	printf("/|");
 	for (int i = 0; i < TOTAL_BOARD_SIZE + 8; i++) {
 		printf("//");
@@ -68,6 +69,13 @@ void printBoard(int board[TOTAL_BOARD_SIZE][TOTAL_BOARD_SIZE]) {
 
 }
 
+void printWelcome() {
+	printf("=====================WELCOME TO SUDOKU!=====================\n\n");
+	printf("Press P to play\n");
+	printf("Press C for controls\n");
+	printf("Press O for options\n");
+}
+
 void printMemError(int lineNum) {
 	printf("Cannot allocate memory in line %d\n", lineNum);
 }
@@ -103,7 +111,7 @@ int** initBoard(int boardNum, bool isSolution) {
 	//	}
 	//}	
 
-	FILE *fp = fopen("board1solution.txt", "r");
+	FILE *fp = fopen("board1.txt", "r");
 	if (fp == NULL) {
 		printf("Can't open file!\n");
 		exit(1);
@@ -189,6 +197,10 @@ bool isValid(int **state) {
 }	
 
 int main() {
+	printWelcome();
+	char input;
+	scanf("%c", &input);
+
 	int **state = initBoard(1, false);
 
 	int board[TOTAL_BOARD_SIZE][TOTAL_BOARD_SIZE];
@@ -202,9 +214,10 @@ int main() {
 		for (int j = 0; j < SIZE; j++) {
 			board[MULTIPLIER * i + CENTER][MULTIPLIER * j + CENTER] = state[i][j];
 		}
-	}	
+	}
+	
+	if (input == 'p') printBoard(board);
 	printBoard(board);
-
 
 	for (int i = 0; i < SIZE; i++) {
 		free(state[i]);
