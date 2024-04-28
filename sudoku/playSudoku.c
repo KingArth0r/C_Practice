@@ -174,6 +174,15 @@ int* convertMoveToPosition(int *input, bool isNoteMode) {
 	return position;
 }
 
+bool isFinished(int **state, int **solution) {
+	for (int i = 0; i < SIZE; i++) {
+		for (int j = 0; j < SIZE; j++) {
+			if (state[i][j] != solution[i][j]) return false;
+		}
+	}
+	return true;
+}
+
 bool isValid(int **state) {
 	bool seen[SIZE];
 	for (int i = 0; i < SIZE; i++) {
@@ -239,23 +248,33 @@ int main() {
 		}
 	}
 	
-	printBoard(board, state);
+	while (!isFinished(state, solution)) {
 
-	int *move = malloc(3 *sizeof(int));
+		printBoard(board, state);
+
+		int *move = malloc(3 *sizeof(int));
+		bool noteMode = false;
 	
-	printf("Make a move! (row column digit)");
-       	scanf("%d %d %d", move, move + 1, move + 2);
+		printf("Make a move! (row column digit)");
+       		scanf("%d %d %d", move, move + 1, move + 2);
+		
+		// TODO: Change quit condition to q somehow
+		if (move[0] < 0) break;
+
+		if (solution[move[0] - 1][move[1] - 1] == move[2]) {
+			state[move[0] - 1][move[1] - 1] = move[2];
+		} else noteMode = true;
+
+		int *position = convertMoveToPosition(move, noteMode);
 	
-	int *position = convertMoveToPosition(move, true);
-	
-	board[position[0]][position[1]] = position[2];
-	printBoard(board, state);	
-	
+		board[position[0]][position[1]] = position[2];
+		printBoard(board, state);	
+
+		free(move);
+		free(position);
+	}
+
 	// free everything
-
-	free(move);
-	free(position);
-
 	for (int i = 0; i < SIZE; i++) {
 		free(solution[i]);
 	}
