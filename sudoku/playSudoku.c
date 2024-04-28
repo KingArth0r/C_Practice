@@ -1,10 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <stdbool.h>
 
 static const int TOTAL_BOARD_SIZE = 27;
+static const int SIZE = 9;
 static const int CENTER = 1;
 static const int MULTIPLIER = 3;
+static const char *DELIM = ",";
 
 // OUTLINE:
 //
@@ -65,7 +68,39 @@ void printBoard(int board[TOTAL_BOARD_SIZE][TOTAL_BOARD_SIZE]) {
 
 }
 
+void initBoard(int state[][SIZE], int boardNum) {
+	FILE *fp = fopen("board1.txt", "r");
+	if (fp == NULL) {
+		printf("Can't open file!");
+		exit(1);
+	}
+	char *line = NULL;
+	size_t len = 0;
+	char *token = NULL;
+	for (int i = 0; i < SIZE; i++) {
+		// read line
+		if (getline(&line, &len, fp) == -1) {
+			printf("Error while reading line %i of the board.\n", i);
+		}
+		token = strtok(line, DELIM);
+		for (int j = 0; j < SIZE; j++) {
+		       state[i][j] = atoi(token);
+		       token = strtok(NULL, DELIM);
+		}
+	}
+	free(line);
+	line = NULL;	
+}	
+
 int main() {
+	int state[SIZE][SIZE];
+	for (int i = 0; i < SIZE; i++) {
+		for (int j = 0; j < SIZE; j++) {
+			state[SIZE][SIZE] = 0;
+		}
+	}
+	initBoard(state, 1);
+
 	int board[TOTAL_BOARD_SIZE][TOTAL_BOARD_SIZE];
 	for (int i = 0; i < TOTAL_BOARD_SIZE; i++) {
 		for (int j = 0; j < TOTAL_BOARD_SIZE; j++) {
@@ -73,7 +108,12 @@ int main() {
 		}
 	}
 	
-	board[4 * MULTIPLIER + CENTER][0 * MULTIPLIER + CENTER] = 1;	
+
+	for (int i = 0; i < SIZE; i++) {
+		for (int j = 0; j < SIZE; j++) {
+			board[MULTIPLIER * i + CENTER][MULTIPLIER * j + CENTER] = state[i][j];
+		}
+	}	
 	printBoard(board);
 	return 0;
 }
