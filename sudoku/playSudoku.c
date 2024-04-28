@@ -23,7 +23,7 @@ static const char *DELIM = ",";
 // Player places a piece by inputting 3 numbers on the same line: row column number 
 
 // input is the 27 x 27 board of numbers and its subnumbers
-void printBoard(int board[TOTAL_BOARD_SIZE][TOTAL_BOARD_SIZE]) {
+void printBoard(int **board, int **state) {
 	// print top boarder, the + 9 is to account for the | between squares
 	printf("\n");
 	printf("/|");
@@ -56,6 +56,11 @@ void printBoard(int board[TOTAL_BOARD_SIZE][TOTAL_BOARD_SIZE]) {
 				else printf("| ");
 			}
 			if (board[i][j] == 0) printf("  ");
+			else if (board[i][j] == state[(i - CENTER) / MULTIPLIER][(j - CENTER) / MULTIPLIER]) {
+			printf("\033[0;31m");
+			printf("%d ", board[i][j]);
+			printf("\033[0m");		
+			}		
 			else printf("%d ", board[i][j]);
 		}
 		printf("||\n");
@@ -96,6 +101,9 @@ int** initBoard(int boardNum, bool isSolution) {
 		}
 	}
 
+	//TODO: DELETE WHEN ASPRINTF IS FIXED
+	char *filename = isSolution ? "board1solution.txt" : "board1.txt";
+
 	//char *filename;
 	//if (isSolution) {
 	//	int temp = asprintf(&filename,  "board%dsolution.txt", boardNum);
@@ -111,7 +119,7 @@ int** initBoard(int boardNum, bool isSolution) {
 	//	}
 	//}	
 
-	FILE *fp = fopen("board1.txt", "r");
+	FILE *fp = fopen(filename, "r");
 	if (fp == NULL) {
 		printf("Can't open file!\n");
 		exit(1);
@@ -158,8 +166,8 @@ int* convertMoveToPosition(int *input, bool isNoteMode) {
 		position[1] = MULTIPLIER * (input[1] - 1) + CENTER;
 		position[2] = input[2];
 	} else {
-		position[0] = MULTIPLIER * input[0] + (input[2] - 1) / 3;
-		position[1] = MULTIPLIER * input[1] + (input[2] - 1) % 3;
+		position[0] = MULTIPLIER * (input[0] - 1) + (input[2] - 1) / 3;
+		position[1] = MULTIPLIER * (input[1] - 1) + (input[2] - 1) % 3;
 		position[2] = input[2];
 	}
 
@@ -218,12 +226,11 @@ int main() {
 	//scanf("%c", &input);
 
 	int **state = initBoard(1, false);
+	int **solution = initBoard(1, true);
 
-	int board[TOTAL_BOARD_SIZE][TOTAL_BOARD_SIZE];
+	int **board = malloc(TOTAL_BOARD_SIZE * sizeof(int*));
 	for (int i = 0; i < TOTAL_BOARD_SIZE; i++) {
-		for (int j = 0; j < TOTAL_BOARD_SIZE; j++) {
-			board[i][j] = 0;
-		}
+		board[i] = calloc(TOTAL_BOARD_SIZE, sizeof(int));
 	}
 	
 	for (int i = 0; i < SIZE; i++) {
@@ -232,25 +239,36 @@ int main() {
 		}
 	}
 	
-	printBoard(board);
+	printBoard(board, state);
 
 	int *move = malloc(3 *sizeof(int));
 	
 	printf("Make a move! (row column digit)");
        	scanf("%d %d %d", move, move + 1, move + 2);
 	
-	int *position = convertMoveToPosition(move, false);
+	int *position = convertMoveToPosition(move, true);
 	
 	board[position[0]][position[1]] = position[2];
-	printBoard(board);	
+	printBoard(board, state);	
+	
+	// free everything
 
 	free(move);
 	free(position);
 
 	for (int i = 0; i < SIZE; i++) {
+		free(solution[i]);
+	}
+	free(solution);
+
+	for (int i = 0; i < SIZE; i++) {
 		free(state[i]);
 	}
 	free(state);
+	for (int i = 0; i < TOTAL_BOARD_SIZE; i++) {
+		free(board[i]);
+	}
+	free(board);
 
 	return 0;
 }
