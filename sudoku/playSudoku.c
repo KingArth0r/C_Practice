@@ -25,7 +25,7 @@ static const char *DELIM = ",";
 // input is the 27 x 27 board of numbers and its subnumbers
 void printBoard(int board[TOTAL_BOARD_SIZE][TOTAL_BOARD_SIZE]) {
 	// print top boarder, the + 9 is to account for the | between squares
-	printf("\n\n");
+	printf("\n");
 	printf("/|");
 	for (int i = 0; i < TOTAL_BOARD_SIZE + 8; i++) {
 		printf("//");
@@ -150,6 +150,22 @@ int** initBoard(int boardNum, bool isSolution) {
 	return state;	
 }
 
+int* convertMoveToPosition(int *input, bool isNoteMode) {
+	// int array which stores values (row, col, val) and converts them to their position on the board
+	int *position = malloc(3 * sizeof(int));
+	if (!isNoteMode) {
+		position[0] = MULTIPLIER * (input[0] - 1) + CENTER;
+		position[1] = MULTIPLIER * (input[1] - 1) + CENTER;
+		position[2] = input[2];
+	} else {
+		position[0] = MULTIPLIER * input[0] + (input[2] - 1) / 3;
+		position[1] = MULTIPLIER * input[1] + (input[2] - 1) % 3;
+		position[2] = input[2];
+	}
+
+	return position;
+}
+
 bool isValid(int **state) {
 	bool seen[SIZE];
 	for (int i = 0; i < SIZE; i++) {
@@ -185,8 +201,8 @@ bool isValid(int **state) {
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {
 					if (state[i][j] > 0) {
-						if (seen[state[i][j] - 1]) return false;
-						else seen[state[i][j] - 1] = true;
+						if (seen[state[n + i][m + j] - 1]) return false;
+						else seen[state[n + i][n + j] - 1] = true;
 					}
 				}
 			}
@@ -197,9 +213,9 @@ bool isValid(int **state) {
 }	
 
 int main() {
-	printWelcome();
-	char input;
-	scanf("%c", &input);
+	//printWelcome();
+	//char input;
+	//scanf("%c", &input);
 
 	int **state = initBoard(1, false);
 
@@ -216,8 +232,20 @@ int main() {
 		}
 	}
 	
-	if (input == 'p') printBoard(board);
 	printBoard(board);
+
+	int *move = malloc(3 *sizeof(int));
+	
+	printf("Make a move! (row column digit)");
+       	scanf("%d %d %d", move, move + 1, move + 2);
+	
+	int *position = convertMoveToPosition(move, false);
+	
+	board[position[0]][position[1]] = position[2];
+	printBoard(board);	
+
+	free(move);
+	free(position);
 
 	for (int i = 0; i < SIZE; i++) {
 		free(state[i]);
