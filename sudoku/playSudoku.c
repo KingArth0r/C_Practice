@@ -11,7 +11,7 @@ static const char *DELIM = ",";
 
 // OUTLINE:
 //
-// Read random board and its solution from file sudoku_puzzles.txt
+// Read random board and its solution from file puzzles directory
 // The state of the game is represented by a 9 x 9 array of integers
 // The board that is printed recorded by a 27 x 27 array of integers (could be optimized with chars)
 // Read input from player and print board after each input
@@ -68,10 +68,44 @@ void printBoard(int board[TOTAL_BOARD_SIZE][TOTAL_BOARD_SIZE]) {
 
 }
 
-void initBoard(int state[][SIZE], int boardNum) {
-	FILE *fp = fopen("board1.txt", "r");
+void printMemError(int lineNum) {
+	printf("Cannot allocate memory in line %d\n", lineNum);
+}
+
+// ask Kyle about asprintf
+int** initBoard(int boardNum, bool isSolution) {
+	int** state = malloc(SIZE * sizeof(int*));
+	if (state == NULL) {
+		printMemError(__LINE__);
+		exit(1);
+	}
+
+	for (int i = 0; i < SIZE; i++) {
+		state[i] = calloc(SIZE, sizeof(int));
+		if (state == NULL) {
+			printMemError(__LINE__);
+			exit(1);
+		}
+	}
+
+	//char *filename;
+	//if (isSolution) {
+	//	int temp = asprintf(&filename,  "board%dsolution.txt", boardNum);
+	//	if (temp == -1) {
+	//		printMemError(__LINE__);
+	//		exit(1);
+	//	}
+	//} else {
+	//	int temp = asprintf(&filename, "board%d.txt", boardNum);
+	//	if (temp == -1) {
+	//		printMemError(__LINE__);
+	//		exit(1);
+	//	}
+	//}	
+
+	FILE *fp = fopen("board1solution.txt", "r");
 	if (fp == NULL) {
-		printf("Can't open file!");
+		printf("Can't open file!\n");
 		exit(1);
 	}
 	char *line = NULL;
@@ -81,25 +115,33 @@ void initBoard(int state[][SIZE], int boardNum) {
 		// read line
 		if (getline(&line, &len, fp) == -1) {
 			printf("Error while reading line %i of the board.\n", i);
+			// free before exiting
+			for (int i = 0; i < SIZE; i++) {
+				free(state[i]);
+			}
+			free(state);
+			free(line);
+			//free(filename);
+
+			exit(1);
 		}
+
 		token = strtok(line, DELIM);
 		for (int j = 0; j < SIZE; j++) {
 		       state[i][j] = atoi(token);
 		       token = strtok(NULL, DELIM);
 		}
 	}
+
 	free(line);
-	line = NULL;	
+	line = NULL;
+	// free(filename);
+	// filename = NULL;
+	return state;	
 }	
 
 int main() {
-	int state[SIZE][SIZE];
-	for (int i = 0; i < SIZE; i++) {
-		for (int j = 0; j < SIZE; j++) {
-			state[SIZE][SIZE] = 0;
-		}
-	}
-	initBoard(state, 1);
+	int **state = initBoard(1, false);
 
 	int board[TOTAL_BOARD_SIZE][TOTAL_BOARD_SIZE];
 	for (int i = 0; i < TOTAL_BOARD_SIZE; i++) {
@@ -115,5 +157,10 @@ int main() {
 		}
 	}	
 	printBoard(board);
+
+
+	for (int i = 0; i < SIZE; i++) {
+		free(state[i]);
+	}
 	return 0;
 }
