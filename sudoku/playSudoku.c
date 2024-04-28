@@ -22,43 +22,46 @@ static const int MULTIPLIER = 3;
 // input is the 27 x 27 board of numbers and its subnumbers
 void printBoard(int board[TOTAL_BOARD_SIZE][TOTAL_BOARD_SIZE]) {
 	// print top boarder, the + 9 is to account for the | between squares
-	printf("/ ");
-	for (int i = 0; i < TOTAL_BOARD_SIZE + 9; i++) {
-		printf("-/");
+	printf("/|");
+	for (int i = 0; i < TOTAL_BOARD_SIZE + 8; i++) {
+		printf("//");
 	}
-	printf("\\\n");
+	printf("|\\\n");
 
 	for (int i = 0; i < TOTAL_BOARD_SIZE; i++) {
 		// print extra separating line
 		if (i > 0 && i % 3 == 0) {
-			printf("| ");
+			printf("||");
 			if (i > 0 && i % 9 == 0) {
-				for (int j = 0; j < TOTAL_BOARD_SIZE + 9; j++) {
+				for (int j = 0; j < TOTAL_BOARD_SIZE + 8; j++) {
 					printf("//");
 				}
 			}
 			else {
-				for (int j = 0; j < TOTAL_BOARD_SIZE + 9; j++) {
+				for (int j = 0; j < TOTAL_BOARD_SIZE + 8; j++) {
 					printf("- ");
 				}
 			}
-			printf("\\\n");
+			printf("||\n");
 		}
-		printf("| ");
+		printf("||");
 
 		for (int j = 0; j < TOTAL_BOARD_SIZE; j++) {
-			if (j > 0 && j < TOTAL_BOARD_SIZE - 1 && j % 3 == 0) printf("| ");
+			if (j > 0 && j < TOTAL_BOARD_SIZE - 1 && j % 3 == 0) {
+				if (j % 9 == 0) printf("||");       
+				else printf("| ");
+			}
 			if (board[i][j] == 0) printf("  ");
 			else printf("%d ", board[i][j]);
 		}
-		printf("|\n");
+		printf("||\n");
 	}	
 
-	printf("\\ ");
-	for (int i = 0; i < TOTAL_BOARD_SIZE + 9; i++) {
-		printf("- ");
+	printf("\\|");
+	for (int i = 0; i < TOTAL_BOARD_SIZE + 8; i++) {
+		printf("//");
 	}
-	printf("/\n");
+	printf("|/\n");
 
 }
 
