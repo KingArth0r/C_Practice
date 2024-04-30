@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,13 +24,16 @@ static const char *DELIM = ",";
 // Player places a piece by inputting 3 numbers on the same line: row column number 
 
 // input is the 27 x 27 board of numbers and its subnumbers
-void printBoard(int **board, int **state) {
+void printBoard(int **board, int **state, bool isNoteMode) {
 	// print top boarder, the + 9 is to account for the | between squares
 	printf("\n");
 	printf("/|");
-	for (int i = 0; i < TOTAL_BOARD_SIZE + 8; i++) {
-		printf("//");
+	if (isNoteMode) {
+		for (int i = 0; i < TOTAL_BOARD_SIZE / 2; i++) printf("//");
+		printf(" NOTE MODE ");
+		for (int i = 0; i < TOTAL_BOARD_SIZE / 2; i++) printf("//");
 	}
+	else for (int i = 0; i < TOTAL_BOARD_SIZE + 8; i++) printf("//");
 	printf("|\\\n");
 
 	for (int i = 0; i < TOTAL_BOARD_SIZE; i++) {
@@ -57,11 +61,18 @@ void printBoard(int **board, int **state) {
 			}
 			if (board[i][j] == 0) printf("  ");
 			else if (board[i][j] == state[(i - CENTER) / MULTIPLIER][(j - CENTER) / MULTIPLIER]) {
-			printf("\033[0;31m");
-			printf("%d ", board[i][j]);
-			printf("\033[0m");		
+				printf("\033[0;31m");
+				printf("%d ", board[i][j]);
+				printf("\033[0m");		
 			}		
-			else printf("%d ", board[i][j]);
+			else {
+				if (!isNoteMode) printf("%d ", board[i][j]);
+				else {
+					printf("\033[0;34m");
+					printf("%d ", board[i][j]);
+					printf("\033[0m");
+				}
+			}
 		}
 		printf("||\n");
 	}	
@@ -78,7 +89,16 @@ void printWelcome() {
 	printf("=====================WELCOME TO SUDOKU!=====================\n\n");
 	printf("Press P to play\n");
 	printf("Press C for controls\n");
-	printf("Press O for options\n");
+	printf("Press O for options\n\n");
+	printf("Press Q to exit\n");
+}
+
+void printControls() {
+	
+}
+
+void printOptions() {
+
 }
 
 void printMemError(int lineNum) {
@@ -101,23 +121,20 @@ int** initBoard(int boardNum, bool isSolution) {
 		}
 	}
 
-	//TODO: DELETE WHEN ASPRINTF IS FIXED
-	char *filename = isSolution ? "board1solution.txt" : "board1.txt";
-
-	//char *filename;
-	//if (isSolution) {
-	//	int temp = asprintf(&filename,  "board%dsolution.txt", boardNum);
-	//	if (temp == -1) {
-	//		printMemError(__LINE__);
-	//		exit(1);
-	//	}
-	//} else {
-	//	int temp = asprintf(&filename, "board%d.txt", boardNum);
-	//	if (temp == -1) {
-	//		printMemError(__LINE__);
-	//		exit(1);
-	//	}
-	//}	
+	char *filename;
+	if (isSolution) {
+		int temp = asprintf(&filename,  "board%dsolution.txt", boardNum);
+		if (temp == -1) {
+			printMemError(__LINE__);
+			exit(1);
+		}
+	} else {
+		int temp = asprintf(&filename, "board%d.txt", boardNum);
+		if (temp == -1) {
+			printMemError(__LINE__);
+			exit(1);
+		}
+	}	
 
 	FILE *fp = fopen(filename, "r");
 	if (fp == NULL) {
@@ -227,15 +244,13 @@ bool isValid(int **state) {
 		}
 	}
 	return true;
-}	
+}
 
-int main() {
-	//printWelcome();
-	//char input;
-	//scanf("%c", &input);
-
-	int **state = initBoard(1, false);
-	int **solution = initBoard(1, true);
+void playGame(int boardNum, int maxNumMistakes) {
+	int **state = initBoard(boardNum, false);
+	int **solution = initBoard(boardNum, true);
+	int numMistakes = 0;
+	bool noteMode = false;
 
 	int **board = malloc(TOTAL_BOARD_SIZE * sizeof(int*));
 	for (int i = 0; i < TOTAL_BOARD_SIZE; i++) {
@@ -250,25 +265,51 @@ int main() {
 	
 	while (!isFinished(state, solution)) {
 
-		printBoard(board, state);
+		printBoard(board, state, noteMode);
 
-		int *move = malloc(3 *sizeof(int));
-		bool noteMode = false;
-	
-		printf("Make a move! (row column digit)");
-       		scanf("%d %d %d", move, move + 1, move + 2);
+		int *move = malloc(3 * sizeof(int));
+		char input;
+		bool clearTile = false;
 		
-		// TODO: Change quit condition to q somehow
-		if (move[0] < 0) break;
+		printf("Mistkaes: %d/%d\n", numMistakes, maxNumMistakes);
+
+		scanf(" %c", &input);
+		if (input == 'q' || input == 'Q') break;
+		if (input == 'n' || input == 'N') {
+			noteMode = !noteMode;
+			printBoard(board, state, noteMode);
+		}
+		
+		printf("Make a move! (row column digit): ");
+		scanf("%d %d %d", move, move + 1, move + 2);
+
+		if (move[2] == 0) clearTile = true;
+
+		if (move[0] <= 0 || move[0] > 9 || move[1] <= 0 || move[1] > 9 || move[2] < 0 || move[2] > 9) {
+			printf("Please enter a valid input! (row column digit)\n");
+			free(move);
+			continue;
+		}
 
 		if (solution[move[0] - 1][move[1] - 1] == move[2]) {
 			state[move[0] - 1][move[1] - 1] = move[2];
-		} else noteMode = true;
+		} else {
+			printf("Incorrect!\n");
+			numMistakes++;
+			free(move);
+			continue;
+		}
+
+		if (numMistakes > maxNumMistakes) {
+			printf("You lose!\n");
+			break;
+		}
+
 
 		int *position = convertMoveToPosition(move, noteMode);
 	
 		board[position[0]][position[1]] = position[2];
-		printBoard(board, state);	
+		printBoard(board, state, noteMode);	
 
 		free(move);
 		free(position);
@@ -288,6 +329,19 @@ int main() {
 		free(board[i]);
 	}
 	free(board);
+}
+
+int main() {
+	while (true) {
+		printWelcome();
+		char input;
+		scanf("%c", &input);
+		if (input == 'q' || input == 'Q') break;
+		else if (input == 'p' || input == 'P') playGame(1, 5);
+		else if (input == 'c' || input == 'C') printControls();
+		else if (input == 'o' || input == 'O') printOptions();
+		else printf("Please enter an option!: ");
+	}
 
 	return 0;
 }
