@@ -29,9 +29,10 @@ void printBoard(int **board, int **state, bool isNoteMode) {
 	printf("\n");
 	printf("/|");
 	if (isNoteMode) {
-		for (int i = 0; i < TOTAL_BOARD_SIZE / 2; i++) printf("//");
+		printf("/");
+		for (int i = 0; i < TOTAL_BOARD_SIZE / 2 + 1; i++) printf("//");
 		printf(" NOTE MODE ");
-		for (int i = 0; i < TOTAL_BOARD_SIZE / 2; i++) printf("//");
+		for (int i = 0; i < TOTAL_BOARD_SIZE / 2 + 2; i++) printf("//");
 	}
 	else for (int i = 0; i < TOTAL_BOARD_SIZE + 8; i++) printf("//");
 	printf("|\\\n");
@@ -78,15 +79,19 @@ void printBoard(int **board, int **state, bool isNoteMode) {
 	}	
 
 	printf("\\|");
-	for (int i = 0; i < TOTAL_BOARD_SIZE + 8; i++) {
-		printf("//");
+	if (isNoteMode) {
+		printf("/");
+		for (int i = 0; i < TOTAL_BOARD_SIZE / 2 + 1; i++) printf("//");
+		printf(" NOTE MODE ");
+		for (int i = 0; i < TOTAL_BOARD_SIZE / 2 + 2; i++) printf("//");
 	}
+	else for (int i = 0; i < TOTAL_BOARD_SIZE + 8; i++) printf("//");
 	printf("|/\n");
 
 }
 
 void printWelcome() {
-	printf("=====================WELCOME TO SUDOKU!=====================\n\n");
+	printf("\n=====================WELCOME TO SUDOKU!=====================\n\n");
 	printf("Press P to play\n");
 	printf("Press C for controls\n");
 	printf("Press O for options\n\n");
@@ -271,7 +276,7 @@ void playGame(int boardNum, int maxNumMistakes) {
 		char input;
 		bool clearTile = false;
 		
-		printf("Mistkaes: %d/%d\n", numMistakes, maxNumMistakes);
+		printf("Mistkaes: %d/%d", numMistakes, maxNumMistakes);
 
 		scanf(" %c", &input);
 		if (input == 'q' || input == 'Q') break;
